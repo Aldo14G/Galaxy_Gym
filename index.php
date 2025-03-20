@@ -292,7 +292,7 @@
         </div>
 
         <div class="footer animate__animated animate__fadeIn animate__delay-1s">
-            <p>Sistema de Gestión para Galaxy Gym &copy; <?php echo date("Y"); ?></p>
+            <p>Base de Datos creada por: Aldo G. M. Pineda &copy; <?php echo date("Y"); ?></p>
         </div>
     </div>
     
