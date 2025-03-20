@@ -1,4 +1,5 @@
 🌌 **Sistema de Gestión Galaxy Gym** 🌌
+
 Un sistema integral basado en MySQL y PHP, diseñado especialmente para optimizar la administración y operaciones diarias de gimnasios.
 
 
