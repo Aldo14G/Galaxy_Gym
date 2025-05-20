@@ -1,15 +1,11 @@
 <?php
-// Incluir archivo de conexión
 require_once 'conexion.php';
 
-// Variables para mensajes y datos del cliente
 $mensaje = "";
 $tipo_mensaje = "";
 $cliente = null;
 
-// Procesar el formulario de registro cuando se envía
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['registrar'])) {
-    // Recoger datos del formulario
     $nombre = $_POST["nombre"];
     $apellido = $_POST["apellido"];
     $telefono = $_POST["telefono"];
@@ -19,13 +15,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['registrar'])) {
     $metodo_pago_id = $_POST["metodo_pago_id"];
     $paga_inscripcion = isset($_POST["paga_inscripcion"]) ? 1 : 0;
     
-    // Validaciones básicas
     if (empty($nombre) || empty($apellido) || empty($telefono)) {
         $mensaje = "Por favor, complete los campos obligatorios (Nombre, Apellido, Teléfono).";
         $tipo_mensaje = "error";
     } else {
         if ($conexion) {
-            // Llamamos al procedimiento almacenado
             $query = "CALL registrar_cliente_con_membresia(?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = mysqli_prepare($conexion, $query);
             mysqli_stmt_bind_param($stmt, "sssssiis", $nombre, $apellido, $telefono, $email, $direccion, $tipo_membresia_id, $metodo_pago_id, $paga_inscripcion);
@@ -37,7 +31,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['registrar'])) {
                     $mensaje = "¡Cliente registrado exitosamente! ID: " . $nuevo_cliente_id;
                     $tipo_mensaje = "success";
                     
-                    // Limpiar el formulario después de un registro exitoso
                     $_POST = array();
                 }
             } else {
@@ -51,14 +44,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['registrar'])) {
     }
 }
 
-// Renovar membresía
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['renovar'])) {
     $cliente_id = $_POST["cliente_id"];
     $tipo_membresia_id = $_POST["tipo_membresia_renovacion"];
     $metodo_pago_id = $_POST["metodo_pago_renovacion"];
     
     if ($conexion) {
-        // Llamamos al procedimiento almacenado
         $query = "CALL renovar_membresia(?, ?, ?)";
         $stmt = mysqli_prepare($conexion, $query);
         mysqli_stmt_bind_param($stmt, "iii", $cliente_id, $tipo_membresia_id, $metodo_pago_id);
@@ -79,7 +70,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['renovar'])) {
     }
 }
 
-// Buscar cliente
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['buscar'])) {
     $busqueda = trim($_POST['busqueda']);
     
@@ -88,7 +78,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['buscar'])) {
         $tipo_mensaje = "error";
     } else {
         if ($conexion) {
-            // Determinar si la búsqueda es por ID o por nombre/teléfono
             $es_numero = is_numeric($busqueda);
             
             if ($es_numero && strlen($busqueda) <= 5) {
@@ -106,7 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['buscar'])) {
                 $stmt = mysqli_prepare($conexion, $sql);
                 mysqli_stmt_bind_param($stmt, "i", $busqueda);
             } else {
-                // Búsqueda por nombre, apellido o teléfono
+
                 $busqueda_like = "%" . $busqueda . "%";
                 $sql = "SELECT c.cliente_id, c.nombre, c.apellido, c.telefono, c.email, c.direccion, c.activo,
                         m.fecha_inicio, m.fecha_vencimiento, tm.nombre AS tipo_membresia,
@@ -577,7 +566,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['buscar'])) {
                 echo '</div>
                             </div>';
                 
-                // Sección para renovar membresía
                 echo '<div class="col-md-6">
                         <h4>Renovar Membresía</h4>
                         <form method="post" action="' . htmlspecialchars($_SERVER["PHP_SELF"]) . '">
@@ -586,7 +574,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['buscar'])) {
                                 <label for="tipo_membresia_renovacion" class="form-label">Nuevo Plan</label>
                                 <select class="form-select" id="tipo_membresia_renovacion" name="tipo_membresia_renovacion" required>';
                 
-                // Reiniciamos el puntero del resultado de membresías
                 mysqli_data_seek($resultado_membresias, 0);
                 while ($membresia = mysqli_fetch_assoc($resultado_membresias)) {
                     $selected = ($cliente['tipo_membresia_id'] == $membresia['tipo_membresia_id']) ? 'selected' : '';
@@ -601,7 +588,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['buscar'])) {
                                 <label for="metodo_pago_renovacion" class="form-label">Método de Pago</label>
                                 <select class="form-select" id="metodo_pago_renovacion" name="metodo_pago_renovacion" required>';
                 
-                // Reiniciamos el puntero del resultado de métodos de pago
                 mysqli_data_seek($resultado_pagos, 0);
                 while ($metodo = mysqli_fetch_assoc($resultado_pagos)) {
                     echo '<option value="' . $metodo['metodo_pago_id'] . '">' . $metodo['nombre'] . '</option>';
@@ -617,7 +603,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['buscar'])) {
                     </div>
                   </div>';
                 
-                // Historial de membresías
                 $query_historial = "SELECT m.membresia_id, m.fecha_inicio, m.fecha_vencimiento, 
                                    tm.nombre AS tipo_membresia, m.monto_pagado, mp.nombre AS metodo_pago
                                    FROM membresias m
@@ -665,7 +650,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['buscar'])) {
                       </div>';
                 }
                 
-                // Historial de asistencias
                 $query_asistencias = "SELECT fecha_hora
                                     FROM asistencias
                                     WHERE cliente_id = ?
@@ -710,7 +694,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['buscar'])) {
             </h2>
             
             <?php
-            // Consultar clientes activos con membresías vigentes
+
             $query_activos = "SELECT 
                                 c.cliente_id,
                                 CONCAT(c.nombre, ' ', c.apellido) AS nombre_completo,
