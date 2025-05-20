@@ -1,13 +1,10 @@
 <?php
-// Conexión a la base de datos
 require_once 'conexion.php';
 
-// Verificar que se recibió un ID de venta
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     $id_venta = $_GET['id'];
     
     try {
-        // Información general de la venta
         $sql_venta = "SELECT v.venta_id, v.fecha, v.total, mp.nombre AS metodo_pago, 
                        IFNULL(CONCAT(c.nombre, ' ', c.apellido), 'Sin cliente asignado') AS cliente
                      FROM ventas v
@@ -21,7 +18,6 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
         $resultado_venta = mysqli_stmt_get_result($stmt_venta);
         
         if ($venta = mysqli_fetch_assoc($resultado_venta)) {
-            // Obtener los detalles de la venta
             $sql_detalles = "SELECT p.nombre, dv.cantidad, dv.precio_unitario, dv.subtotal
                            FROM detalles_venta dv
                            JOIN productos p ON dv.producto_id = p.producto_id
@@ -37,13 +33,11 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                 $detalles[] = $detalle;
             }
             
-            // Preparar respuesta
             $respuesta = array(
                 'venta' => $venta,
                 'detalles' => $detalles
             );
             
-            // Devolver como JSON
             header('Content-Type: application/json');
             echo json_encode($respuesta);
             
@@ -62,6 +56,5 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     echo json_encode(array('error' => 'ID de venta no válido'));
 }
 
-// Cerrar la conexión
 mysqli_close($conexion);
 ?>
